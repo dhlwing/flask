@@ -26,7 +26,7 @@ The Forms
 
 This is an example form for a typical registration page::
 
-    from wtforms import Form, BooleanField, TextField, validators
+    from wtforms import Form, BooleanField, TextField, PasswordField, validators
 
     class RegistrationForm(Form):
         username = TextField('Username', [validators.Length(min=4, max=25)])
@@ -77,7 +77,7 @@ how easy this is.  WTForms does half the form generation for us already.
 To make it even nicer, we can write a macro that renders a field with
 label and a list of errors if there are any.
 
-Here an example `_formhelpers.html` template with such a macro:
+Here's an example `_formhelpers.html` template with such a macro:
 
 .. sourcecode:: html+jinja
 
@@ -85,15 +85,17 @@ Here an example `_formhelpers.html` template with such a macro:
       <dt>{{ field.label }}
       <dd>{{ field(**kwargs)|safe }}
       {% if field.errors %}
-        <ul class="errors">
-        {% for error in field.errors %}<li>{{ error }}{% endfor %}
+        <ul class=errors>
+        {% for error in field.errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
         </ul>
       {% endif %}
       </dd>
     {% endmacro %}
 
 This macro accepts a couple of keyword arguments that are forwarded to
-WTForm's field function that renders the field for us.  They keyword
+WTForm's field function that renders the field for us.  The keyword
 arguments will be inserted as HTML attributes.  So for example you can
 call ``render_field(form.username, class='username')`` to add a class to
 the input element.  Note that WTForms returns standard Python unicode
@@ -106,7 +108,7 @@ takes advantage of the `_formhelpers.html` template:
 .. sourcecode:: html+jinja
 
     {% from "_formhelpers.html" import render_field %}
-    <form method="post" action="/register">
+    <form method=post action="/register">
       <dl>
         {{ render_field(form.username) }}
         {{ render_field(form.email) }}

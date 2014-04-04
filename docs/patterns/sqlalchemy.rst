@@ -42,11 +42,15 @@ Here the example `database.py` module for your application::
     engine = create_engine('sqlite:////tmp/test.db', convert_unicode=True)
     db_session = scoped_session(sessionmaker(autocommit=False,
                                              autoflush=False,
-                                             bind=engine)) 
+                                             bind=engine))
     Base = declarative_base()
     Base.query = db_session.query_property()
 
     def init_db():
+        # import all modules here that might define models so that
+        # they will be registered properly on the metadata.  Otherwise
+        # you will have to import them first before calling init_db()
+        import yourapplication.models
         Base.metadata.create_all(bind=engine)
 
 To define your models, just subclass the `Base` class that was created by
@@ -57,14 +61,14 @@ already with the :class:`~sqlalchemy.orm.scoped_session`.
 
 To use SQLAlchemy in a declarative way with your application, you just
 have to put the following code into your application module.  Flask will
-automatically remove database sessions at the end of the request for you::
+automatically remove database sessions at the end of the request or
+when the application shuts down::
 
     from yourapplication.database import db_session
 
-    @app.after_request
-    def shutdown_session(response):
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
         db_session.remove()
-        return response
 
 Here is an example model (put this into `models.py`, e.g.)::
 
@@ -84,6 +88,11 @@ Here is an example model (put this into `models.py`, e.g.)::
         def __repr__(self):
             return '<User %r>' % (self.name)
 
+To create the database you can use the `init_db` function:
+
+>>> from yourapplication.database import init_db
+>>> init_db()
+
 You can insert entries into the database like this:
 
 >>> from yourapplication.database import db_session
@@ -101,7 +110,7 @@ Querying is simple as well:
 
 .. _SQLAlchemy: http://www.sqlalchemy.org/
 .. _declarative:
-   http://www.sqlalchemy.org/docs/reference/ext/declarative.html
+   http://www.sqlalchemy.org/docs/orm/extensions/declarative.html
 
 Manual Object Relational Mapping
 --------------------------------
@@ -122,19 +131,19 @@ Here is an example `database.py` module for your application::
     metadata = MetaData()
     db_session = scoped_session(sessionmaker(autocommit=False,
                                              autoflush=False,
-                                             bind=engine)) 
+                                             bind=engine))
     def init_db():
         metadata.create_all(bind=engine)
 
 As for the declarative approach you need to close the session after
-each request.  Put this into your application module::
+each request or application context shutdown.  Put this into your
+application module::
 
     from yourapplication.database import db_session
 
-    @app.after_request
-    def shutdown_session(response):
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
         db_session.remove()
-        return response
 
 Here is an example table and model (put this into `models.py`)::
 
@@ -150,7 +159,7 @@ Here is an example table and model (put this into `models.py`)::
             self.email = email
 
         def __repr__(self):
-            return '<User %r>' % (self.name, self.email)
+            return '<User %r>' % (self.name)
 
     users = Table('users', metadata,
         Column('id', Integer, primary_key=True),
@@ -176,13 +185,15 @@ you basically only need the engine::
 Then you can either declare the tables in your code like in the examples
 above, or automatically load them::
 
+    from sqlalchemy import Table
+    
     users = Table('users', metadata, autoload=True)
 
 To insert data you can use the `insert` method.  We have to get a
 connection first so that we can use a transaction:
 
 >>> con = engine.connect()
->>> con.execute(users.insert(name='admin', email='admin@localhost'))
+>>> con.execute(users.insert(), name='admin', email='admin@localhost')
 
 SQLAlchemy will automatically commit for us.
 

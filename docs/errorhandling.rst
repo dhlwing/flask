@@ -1,7 +1,7 @@
 .. _application-errors:
 
-Handling Application Errors
-===========================
+Logging Application Errors
+==========================
 
 .. versionadded:: 0.3
 
@@ -71,9 +71,9 @@ We also tell the handler to only send errors and more critical messages.
 Because we certainly don't want to get a mail for warnings or other
 useless logs that might happen during request handling.
 
-Before you run that in production, please also look at :ref:`log-format`
-to put more information into that error mail.  That will save you from a
-lot of frustration.
+Before you run that in production, please also look at :ref:`logformat` to
+put more information into that error mail.  That will save you from a lot
+of frustration.
 
 
 Logging to a File
@@ -89,7 +89,7 @@ There are a couple of handlers provided by the logging system out of the
 box but not all of them are useful for basic error logging.  The most
 interesting are probably the following:
 
--   :class:`~logging.handlers.FileHandler` - logs messages to a file on the
+-   :class:`~logging.FileHandler` - logs messages to a file on the
     filesystem.
 -   :class:`~logging.handlers.RotatingFileHandler` - logs messages to a file
     on the filesystem and will rotate after a certain number of messages.
@@ -105,12 +105,12 @@ above, just make sure to use a lower setting (I would recommend
 
     if not app.debug:
         import logging
-        from logging.handlers import TheHandlerYouWant
+        from themodule import TheHandlerYouWant
         file_handler = TheHandlerYouWant(...)
         file_handler.setLevel(logging.WARNING)
         app.logger.addHandler(file_handler)
 
-.. _log-format:
+.. _logformat:
 
 Controlling the Log Format
 --------------------------
@@ -235,3 +235,68 @@ iterating over them to attach handlers::
     for logger in loggers:
         logger.addHandler(mail_handler)
         logger.addHandler(file_handler)
+
+
+Debugging Application Errors
+============================
+
+For production applications, configure your application with logging and
+notifications as described in :ref:`application-errors`.  This section provides
+pointers when debugging deployment configuration and digging deeper with a
+full-featured Python debugger.
+
+
+When in Doubt, Run Manually
+---------------------------
+
+Having problems getting your application configured for production?  If you
+have shell access to your host, verify that you can run your application
+manually from the shell in the deployment environment.  Be sure to run under
+the same user account as the configured deployment to troubleshoot permission
+issues.  You can use Flask's builtin development server with `debug=True` on
+your production host, which is helpful in catching configuration issues, but
+**be sure to do this temporarily in a controlled environment.** Do not run in
+production with `debug=True`.
+
+
+.. _working-with-debuggers:
+
+Working with Debuggers
+----------------------
+
+To dig deeper, possibly to trace code execution, Flask provides a debugger out
+of the box (see :ref:`debug-mode`).  If you would like to use another Python
+debugger, note that debuggers interfere with each other.  You have to set some
+options in order to use your favorite debugger:
+
+* ``debug``        - whether to enable debug mode and catch exceptions
+* ``use_debugger`` - whether to use the internal Flask debugger
+* ``use_reloader`` - whether to reload and fork the process on exception
+
+``debug`` must be True (i.e., exceptions must be caught) in order for the other
+two options to have any value.
+
+If you're using Aptana/Eclipse for debugging you'll need to set both
+``use_debugger`` and ``use_reloader`` to False.
+
+A possible useful pattern for configuration is to set the following in your
+config.yaml (change the block as appropriate for your application, of course)::
+
+   FLASK:
+       DEBUG: True
+       DEBUG_WITH_APTANA: True
+
+Then in your application's entry-point (main.py), you could have something like::
+
+   if __name__ == "__main__":
+       # To allow aptana to receive errors, set use_debugger=False
+       app = create_app(config="config.yaml")
+
+       if app.debug: use_debugger = True
+       try:
+           # Disable Flask's debugger if external debugger is requested
+           use_debugger = not(app.config.get('DEBUG_WITH_APTANA'))
+       except:
+           pass
+       app.run(use_debugger=use_debugger, debug=app.debug,
+               use_reloader=use_debugger, host='0.0.0.0')

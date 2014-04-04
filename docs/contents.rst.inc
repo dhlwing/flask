@@ -9,12 +9,20 @@ instructions for web development with Flask.
    :maxdepth: 2
 
    foreword
+   advanced_foreword
    installation
    quickstart
    tutorial/index
+   templating
    testing
    errorhandling
    config
+   signals
+   views
+   appcontext
+   reqcontext
+   blueprints
+   extensions
    shell
    patterns/index
    deploying/index
@@ -44,6 +52,8 @@ Design notes, legal information and changelog are here for the interested.
    security
    unicode
    extensiondev
+   styleguide
+   python3
    upgrading
    changelog
    license

@@ -17,6 +17,7 @@ import sys, os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('_themes'))
+sys.path.append(os.path.abspath('.'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -25,7 +26,8 @@ sys.path.append(os.path.abspath('_themes'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx',
+              'flaskdocext']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -41,7 +43,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Flask'
-copyright = u'2010, Armin Ronacher'
+copyright = u'2014, Armin Ronacher'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -123,7 +125,7 @@ html_theme_path = ['_themes']
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = "flask-favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -243,9 +245,25 @@ latex_additional_files = ['flaskstyle.sty', 'logo.pdf']
 
 intersphinx_mapping = {
     'http://docs.python.org/dev': None,
-    'http://werkzeug.pocoo.org/documentation/dev/': None,
+    'http://werkzeug.pocoo.org/docs/': None,
     'http://www.sqlalchemy.org/docs/': None,
-    'http://wtforms.simplecodes.com/docs/0.5/': None
+    'http://wtforms.simplecodes.com/docs/0.5/': None,
+    'http://discorporate.us/projects/Blinker/docs/1.1/': None
 }
 
 pygments_style = 'flask_theme_support.FlaskyStyle'
+
+# fall back if theme is not there
+try:
+    __import__('flask_theme_support')
+except ImportError, e:
+    print '-' * 74
+    print 'Warning: Flask themes unavailable.  Building with default theme'
+    print 'If you want the Flask themes, run this command and build again:'
+    print
+    print '  git submodule update --init'
+    print '-' * 74
+
+    pygments_style = 'tango'
+    html_theme = 'default'
+    html_theme_options = {}

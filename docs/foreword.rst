@@ -8,84 +8,50 @@ should or should not be using it.
 What does "micro" mean?
 -----------------------
 
-To me, the "micro" in microframework refers not only to the simplicity and
-small size of the framework, but also to the typically limited complexity
-and size of applications that are written with the framework.  To be
-approachable and concise, a microframework sacrifices a few features that
-may be necessary in larger or more complex applications.
+“Micro” does not mean that your whole web application has to fit into a single
+Python file, although it certainly can. Nor does it mean that Flask is lacking
+in functionality. The "micro" in microframework means Flask aims to keep the
+core simple but extensible. Flask won't make many decisions for you, such as
+what database to use. Those decisions that it does make, such as what
+templating engine to use, are easy to change.  Everything else is up to you, so
+that Flask can be everything you need and nothing you don't.
 
-For example, Flask uses thread-local objects internally so that you don't
-have to pass objects around from function to function within a request in
-order to stay threadsafe.  While this is a really easy approach and saves
-you a lot of time, it also does not scale well to large applications.
-It's especially painful for more complex unittests, and when you suddenly
-have to deal with code being executed outside of the context of a request,
-such as in cron jobs.
+By default, Flask does not include a database abstraction layer, form
+validation or anything else where different libraries already exist that can
+handle that. Instead, Flask supports extensions to add such functionality to
+your application as if it was implemented in Flask itself. Numerous extensions
+provide database integration, form validation, upload handling, various open
+authentication technologies, and more. Flask may be "micro", but it's ready for
+production use on a variety of needs.
 
-Flask provides some tools to deal with the downsides of this approach, but
-the core problem remains.  Flask is also based on convention over
-configuration, which means that many things are preconfigured and will
-work well for smaller applications but not so well for larger ones.  For
-example, by convention, templates and static files are in subdirectories
-within the Python source tree of the application.
+Configuration and Conventions
+-----------------------------
 
-But don't worry if your application suddenly grows larger
-and you're afraid Flask might not grow with it.  Even with
-larger frameworks, you'll eventually discover that you need
-something the framework just cannot do for you without modification.
-If you are ever in that situation, check out the :ref:`becomingbig`
-chapter.
+Flask has many configuration values, with sensible defaults, and a few
+conventions when getting started.  By convention templates and static files are
+stored in subdirectories within the application's Python source tree, with the
+names `templates` and `static` respectively. While this can be changed you
+usually don't have to, especially when getting started.
 
-A Framework and an Example
---------------------------
+Growing with Flask
+------------------
 
-Flask is not only a microframework; it is also an example.  Based on
-Flask, there will be a series of blog posts that explain how to create a
-framework.  Flask itself is just one way to implement a framework on top
-of existing libraries.  Unlike many other microframeworks, Flask does not
-try to implement everything on its own; it reuses existing code.
+Once you have Flask up and running, you'll find a variety of extensions
+available in the community to integrate your project for production. The Flask
+core team reviews extensions and ensures approved extensions do not break with
+future releases.
 
-Web Development is Dangerous
-----------------------------
+As your codebase grows, you are free to make the design decisions appropriate
+for your project.  Flask will continue to provide a very simple glue layer to
+the best that Python has to offer.  You can implement advanced patterns in
+SQLAlchemy or another database tool, introduce non-relational data persistence
+as appropriate, and take advantage of framework-agnostic tools built for WSGI,
+the Python web interface.
 
-I'm not joking.  Well, maybe a little.  If you write a web
-application, you are probably allowing users to register and leave their
-data on your server.  The users are entrusting you with data.  And even if
-you are the only user that might leave data in your application, you still
-want that data to be stored securely.
+Flask includes many hooks to customize its behavior. Should you need more
+customization, the Flask class is built for subclassing. If you are interested
+in that, check out the :ref:`becomingbig` chapter.  If you are curious about
+the Flask design principles, head over to the section about :ref:`design`.
 
-Unfortunately, there are many ways the security of a web application can be
-compromised.  Flask protects you against one of the most common security
-problems of modern web applications: cross-site scripting (XSS).  Unless
-you deliberately mark insecure HTML as secure, Flask and the underlying
-Jinja2 template engine have you covered.  But there are many more ways to
-cause security problems.
-
-The documentation will warn you about aspects of web development that
-require attention to security.  Some of these security concerns
-are far more complex than one might think, and we all sometimes underestimate
-the likelihood that a vulnerability will be exploited, until a clever
-attacker figures out a way to exploit our applications.  And don't think
-that your application is not important enough to attract an attacker.
-Depending on the kind of attack, chances are that automated bots are
-probing for ways to fill your database with spam, links to malicious
-software, and the like.
-
-So always keep security in mind when doing web development.
-
-Target Audience
----------------
-
-Is Flask for you?  If your application is small-ish and does not depend on
-very complex database structures, Flask is the Framework for you.  It was
-designed from the ground up to be easy to use, and built on the firm
-foundation of established principles, good intentions, and mature, widely
-used libraries.  Recent versions of Flask scale nicely within reasonable
-bounds, and if you grow larger, you won't have any trouble adjusting Flask
-for your new application size.
-
-If you suddenly discover that your application grows larger than
-originally intended, head over to the :ref:`becomingbig` section to see
-some possible solutions for larger applications.
-
-Satisfied?  Then let's proceed with :ref:`installation`.
+Continue to :ref:`installation`, the :ref:`quickstart`, or the
+:ref:`advanced_foreword`.

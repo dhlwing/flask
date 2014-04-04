@@ -1,3 +1,5 @@
+.. _design:
+
 Design Decisions in Flask
 =========================
 
@@ -46,7 +48,7 @@ allocated will be freed again.
 
 Another thing that becomes possible when you have an explicit object lying
 around in your code is that you can subclass the base class
-(:class:`~flask.Flask`) to alter specific behaviour.  This would not be
+(:class:`~flask.Flask`) to alter specific behavior.  This would not be
 possible without hacks if the object were created ahead of time for you
 based on a class that is not exposed to you.
 
@@ -76,6 +78,22 @@ to the application object :meth:`~flask.Flask.wsgi_app`).
 Furthermore this design makes it possible to use a factory function to
 create the application which is very helpful for unittesting and similar
 things (:ref:`app-factories`).
+
+The Routing System
+------------------
+
+Flask uses the Werkzeug routing system which was designed to
+automatically order routes by complexity.  This means that you can declare
+routes in arbitrary order and they will still work as expected.  This is a
+requirement if you want to properly implement decorator based routing
+since decorators could be fired in undefined order when the application is
+split into multiple modules.
+
+Another design decision with the Werkzeug routing system is that routes
+in Werkzeug try to ensure that URLs are unique.  Werkzeug will go quite far
+with that in that it will automatically redirect to a canonical URL if a route
+is ambiguous.
+
 
 One Template Engine
 -------------------
@@ -108,6 +126,10 @@ ways to access macros from Jinja2 templates.
 A template abstraction layer that would not take the unique features of
 the template engines away is a science on its own and a too large
 undertaking for a microframework like Flask.
+
+Furthermore extensions can then easily depend on one template language
+being present.  You can easily use your own templating language, but an
+extension could still depend on Jinja itself.
 
 
 Micro with Dependencies

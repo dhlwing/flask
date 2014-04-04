@@ -18,7 +18,11 @@ Snippet Archives <http://flask.pocoo.org/snippets/>`_.
 
    packages
    appfactories
+   appdispatch
+   apierrors
+   urlprocessors
    distribute
+   fabric
    sqlite3
    sqlalchemy
    fileuploads
@@ -31,3 +35,9 @@ Snippet Archives <http://flask.pocoo.org/snippets/>`_.
    errorpages
    lazyloading
    mongokit
+   favicon
+   streaming
+   deferredcallbacks
+   methodoverrides
+   requestchecksum
+   celery

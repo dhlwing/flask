@@ -1,35 +1,36 @@
+.. _mod_wsgi-deployment:
+
 mod_wsgi (Apache)
 =================
 
-If you are using the `Apache`_ webserver you should consider using `mod_wsgi`_.
+If you are using the `Apache`_ webserver, consider using `mod_wsgi`_.
 
 .. admonition:: Watch Out
 
-   Please make sure in advance that your ``app.run()`` call you might
-   have in your application file, is inside an ``if __name__ ==
-   '__main__':`` or moved to a separate file.  Just make sure it's not
-   called because this will always start a local WSGI server which we do
-   not want if we deploy that application to mod_wsgi.
+   Please make sure in advance that any ``app.run()`` calls you might
+   have in your application file are inside an ``if __name__ ==
+   '__main__':`` block or moved to a separate file.  Just make sure it's
+   not called because this will always start a local WSGI server which
+   we do not want if we deploy that application to mod_wsgi.
 
 .. _Apache: http://httpd.apache.org/
 
 Installing `mod_wsgi`
 ---------------------
 
-If you don't have `mod_wsgi` installed yet you have to either install it using
-a package manager or compile it yourself.
+If you don't have `mod_wsgi` installed yet you have to either install it
+using a package manager or compile it yourself.  The mod_wsgi
+`installation instructions`_ cover source installations on UNIX systems.
 
-The mod_wsgi `installation instructions`_ cover source installations on UNIX
-systems.
-
-If you are using Ubuntu/Debian you can apt-get it and activate it as follows:
+If you are using Ubuntu/Debian you can apt-get it and activate it as
+follows:
 
 .. sourcecode:: text
 
     # apt-get install libapache2-mod-wsgi
 
-On FreeBSD install `mod_wsgi` by compiling the `www/mod_wsgi` port or by using
-pkg_add:
+On FreeBSD install `mod_wsgi` by compiling the `www/mod_wsgi` port or by
+using pkg_add:
 
 .. sourcecode:: text
 
@@ -38,8 +39,8 @@ pkg_add:
 If you are using pkgsrc you can install `mod_wsgi` by compiling the
 `www/ap2-wsgi` package.
 
-If you encounter segfaulting child processes after the first apache reload you
-can safely ignore them.  Just restart the server.
+If you encounter segfaulting child processes after the first apache
+reload you can safely ignore them.  Just restart the server.
 
 Creating a `.wsgi` file
 -----------------------
@@ -59,14 +60,20 @@ instance you can directly import that one as `application`.
 Store that file somewhere that you will find it again (e.g.:
 `/var/www/yourapplication`) and make sure that `yourapplication` and all
 the libraries that are in use are on the python load path.  If you don't
-want to install it system wide consider using a `virtual python`_ instance.
+want to install it system wide consider using a `virtual python`_
+instance.  Keep in mind that you will have to actually install your
+application into the virtualenv as well.  Alternatively there is the
+option to just patch the path in the `.wsgi` file before the import::
+
+    import sys
+    sys.path.insert(0, '/path/to/the/application')
 
 Configuring Apache
 ------------------
 
-The last thing you have to do is to create an Apache configuration file for
-your application.  In this example we are telling `mod_wsgi` to execute the
-application under a different user for security reasons:
+The last thing you have to do is to create an Apache configuration file
+for your application.  In this example we are telling `mod_wsgi` to
+execute the application under a different user for security reasons:
 
 .. sourcecode:: apache
 
@@ -84,6 +91,20 @@ application under a different user for security reasons:
         </Directory>
     </VirtualHost>
 
+Note: WSGIDaemonProcess isn't implemented in Windows and Apache will 
+refuse to run with the above configuration. On a Windows system, eliminate those lines:
+
+.. sourcecode:: apache
+
+	<VirtualHost *>
+		ServerName example.com
+		WSGIScriptAlias / C:\yourdir\yourapp.wsgi
+		<Directory C:\yourdir>
+			Order deny,allow
+			Allow from all
+		</Directory>
+	</VirtualHost>
+
 For more information consult the `mod_wsgi wiki`_.
 
 .. _mod_wsgi: http://code.google.com/p/modwsgi/
@@ -91,22 +112,23 @@ For more information consult the `mod_wsgi wiki`_.
 .. _virtual python: http://pypi.python.org/pypi/virtualenv
 .. _mod_wsgi wiki: http://code.google.com/p/modwsgi/wiki/
 
-Toubleshooting
---------------
+Troubleshooting
+---------------
 
 If your application does not run, follow this guide to troubleshoot:
 
 **Problem:** application does not run, errorlog shows SystemExit ignored
     You have a ``app.run()`` call in your application file that is not
-    guarded by an ``if __name__ == '__main__':`` condition.  Either remove
-    that :meth:`~flask.Flask.run` call from the file and move it into a
-    separate `run.py` file or put it into such an if block.
+    guarded by an ``if __name__ == '__main__':`` condition.  Either
+    remove that :meth:`~flask.Flask.run` call from the file and move it
+    into a separate `run.py` file or put it into such an if block.
 
 **Problem:** application gives permission errors
     Probably caused by your application running as the wrong user.  Make
     sure the folders the application needs access to have the proper
-    privileges set and the application runs as the correct user (``user``
-    and ``group`` parameter to the `WSGIDaemonProcess` directive)
+    privileges set and the application runs as the correct user
+    (``user`` and ``group`` parameter to the `WSGIDaemonProcess`
+    directive)
 
 **Problem:** application dies with an error on print
     Keep in mind that mod_wsgi disallows doing anything with
@@ -125,22 +147,35 @@ If your application does not run, follow this guide to troubleshoot:
         sys.stdout = sys.stderr
 
 **Problem:** accessing resources gives IO errors
-    Your application probably is a single .py file you symlinked into the
-    site-packages folder.  Please be aware that this does not work,
-    instead you either have to put the folder into the pythonpath the file
-    is stored in, or convert your application into a package.
+    Your application probably is a single .py file you symlinked into
+    the site-packages folder.  Please be aware that this does not work,
+    instead you either have to put the folder into the pythonpath the
+    file is stored in, or convert your application into a package.
 
     The reason for this is that for non-installed packages, the module
     filename is used to locate the resources and for symlinks the wrong
     filename is picked up.
+
+Support for Automatic Reloading
+-------------------------------
+
+To help deployment tools you can activate support for automatic
+reloading.  Whenever something changes the `.wsgi` file, `mod_wsgi` will
+reload all the daemon processes for us.
+
+For that, just add the following directive to your `Directory` section:
+
+.. sourcecode:: apache
+
+   WSGIScriptReloading On
 
 Working with Virtual Environments
 ---------------------------------
 
 Virtual environments have the advantage that they never install the
 required dependencies system wide so you have a better control over what
-is used where.  If you want to use a virtual environment with mod_wsgi you
-have to modify your `.wsgi` file slightly.
+is used where.  If you want to use a virtual environment with mod_wsgi
+you have to modify your `.wsgi` file slightly.
 
 Add the following lines to the top of your `.wsgi` file::
 

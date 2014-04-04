@@ -7,7 +7,7 @@ Using a document database rather than a full DBMS gets more common these days.
 This pattern shows how to use MongoKit, a document mapper library, to
 integrate with MongoDB.
 
-This pattern requires an running MongoDB server and the MongoKit library
+This pattern requires a running MongoDB server and the MongoKit library
 installed.
 
 There are two very common ways to use MongoKit.  I will outline each of them
@@ -17,7 +17,7 @@ here:
 Declarative
 -----------
 
-The default behaviour of MongoKit is the declarative one that is based on
+The default behavior of MongoKit is the declarative one that is based on
 common ideas from Django or the SQLAlchemy declarative extension.
 
 Here an example `app.py` module for your application::
@@ -78,7 +78,7 @@ validator for the maximum character length and uses a special MongoKit feature
 called `use_dot_notation`.  Per default MongoKit behaves like a python
 dictionary but with `use_dot_notation` set to `True` you can use your
 documents like you use models in nearly any other ORM by using dots to
-seperate between attributes.
+separate between attributes.
 
 You can insert entries into the database like this:
 
@@ -122,9 +122,6 @@ collection first, this is somewhat the same as a table in the SQL world.
 >>> user = {'name': u'admin', 'email': u'admin@localhost'}
 >>> collection.insert(user)
 
-print list(collection.find())
-print collection.find_one({'name': u'admin'})
-
 MongoKit will automatically commit for us.
 
 To query your database, you use the collection directly:
@@ -141,4 +138,4 @@ These results are also dict-like objects:
 u'admin@localhost'
 
 For more information about MongoKit, head over to the
-`website <http://bytebucket.org/namlook/mongokit/>`_.
+`website <https://github.com/namlook/mongokit>`_.
